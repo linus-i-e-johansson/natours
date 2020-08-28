@@ -1,3 +1,6 @@
+// request is recived here, based on the route is either goes to
+// tours or user. (app) ==> (tourRouter) ==> (controller) ==> makes the call and sends back response
+
 const express = require("express");
 const morgan = require("morgan");
 const tourRouter = require("./routes/tourRoutes");
@@ -17,12 +20,7 @@ app.use((req, res, next) => {
 });
 
 // 2) ROUTES
-
 app.use("/api/v1/tours", tourRouter); // mounting the router
 app.use("/api/v1/users", userRouter); // mounting the router
 
-// 3) START SERVER
-const port = 3000;
-app.listen(port, () => {
-  console.log(`Server listens on port ${port}`);
-});
+module.exports = app;
