@@ -10,6 +10,7 @@ const app = express();
 //1) MIDDLEWARES
 app.use(morgan("dev"));
 app.use(express.json()); // middleware, needed so that the data from the body is added to the request-obj
+app.use(express.static(`${__dirname}/public`));
 app.use((req, res, next) => {
   console.log("Hello from the midddleware ;)");
   next();
