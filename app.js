@@ -1,4 +1,4 @@
-// request is recived here, based on the route is either goes to
+// request is received here, based on the route is either goes to
 // tours or user. (app) ==> (tourRouter) ==> (controller) ==> makes the call and sends back response
 
 const express = require("express");
@@ -8,11 +8,15 @@ const userRouter = require("./routes/userRoutes");
 const app = express();
 
 //1) MIDDLEWARES
-app.use(morgan("dev"));
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+}
+
 app.use(express.json()); // middleware, needed so that the data from the body is added to the request-obj
 app.use(express.static(`${__dirname}/public`));
+
 app.use((req, res, next) => {
-  console.log("Hello from the midddleware ;)");
+  console.log("Hello from the middleware ;)");
   next();
 });
 app.use((req, res, next) => {
