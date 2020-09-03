@@ -1,7 +1,7 @@
+// MIDDLEWARES
 const Tour = require("../models/tourModel");
 
-// MIDDLEWARES
-//GET all tours.
+//GET ALL TOURS.
 exports.getAllTours = async (req, res) => {
   try {
     // BUILD QUERY
@@ -20,8 +20,8 @@ exports.getAllTours = async (req, res) => {
       data: {
         tours,
       },
-    });
-  } catch (eee) {
+    }); //HANDLE POTENTIAL ERRORS
+  } catch (err) {
     res.status(404).json({
       status: "fail",
       message: err,
@@ -29,8 +29,8 @@ exports.getAllTours = async (req, res) => {
   }
 };
 
-//GET a Single Tour
-exports.getSingelTour = async (req, res) => {
+//GET A SINGLE TOUR
+exports.getSingleTour = async (req, res) => {
   try {
     const { id } = req.params;
     const tour = await Tour.findOne({
@@ -50,7 +50,7 @@ exports.getSingelTour = async (req, res) => {
   }
 };
 
-//Add a new tour.
+//ADD A NEW TOUR.
 exports.createTour = async (req, res) => {
   try {
     const newTour = await Tour.create(req.body);
@@ -68,7 +68,7 @@ exports.createTour = async (req, res) => {
   }
 };
 
-// UPDATE a tour
+// UPDATE A TOUR
 exports.updateTour = async (req, res) => {
   try {
     const { id } = req.params;
@@ -89,7 +89,7 @@ exports.updateTour = async (req, res) => {
     });
   }
 };
-//DELETE a tour
+//DELETE A TOUR
 exports.deleteTour = async (req, res) => {
   try {
     const { id } = req.params;

@@ -11,7 +11,7 @@ router
   .post(tourController.createTour);
 router
   .route("/:id")
-  .get(tourController.getSingelTour)
+  .get(tourController.getSingleTour)
   .patch(tourController.updateTour)
   .delete(tourController.deleteTour);
 module.exports = router;
