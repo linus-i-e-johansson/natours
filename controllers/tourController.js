@@ -33,6 +33,20 @@ exports.getAllTours = async (req, res) => {
       query.select("-__v")
     }
 
+    // 4). Pagination
+    const page = req.query.page * 1 || 1;//page & default page if not requested.
+    const limit = req.query.limit * 1 || 100;// how many results on each page & 100 is default number.
+    const skipValue = (page - 1 ) * limit;// calc of the pages to be ignored, I.E previous results.
+    //console.log(skipValue)
+    query = query.skip(skipValue).limit(limit);
+
+    if(req.query.page){
+      //check to see if we are skipping more tours than we have in DB.
+      const numTours = await Tour.countDocuments();
+      if(skipValue >= numTours) throw new Error("This page dosent exsist.")
+
+    }
+
 
     //EXECUTE QUERY
     const tours = await query;
