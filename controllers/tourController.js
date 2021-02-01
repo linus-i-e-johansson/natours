@@ -1,6 +1,13 @@
 // MIDDLEWARES
 const Tour = require("../models/tourModel");
 
+exports.aliasTopTours = (req, res, next) => {
+  req.query.limit = "5";
+  req.query.sort = "-ratingsAverage,price";
+  req.query.fields ="name,price,ratingsAverage,summary,difficulty";
+  next();
+}
+
 //GET ALL TOURS.
 exports.getAllTours = async (req, res) => {
   try {
@@ -43,7 +50,7 @@ exports.getAllTours = async (req, res) => {
     if(req.query.page){
       //check to see if we are skipping more tours than we have in DB.
       const numTours = await Tour.countDocuments();
-      if(skipValue >= numTours) throw new Error("This page dosent exsist.")
+      if(skipValue >= numTours) throw new Error("This page dosent exsist.");
 
     }
 
