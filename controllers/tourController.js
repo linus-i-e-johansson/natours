@@ -180,6 +180,9 @@ exports.getMonthlyPlan = async (req,res) => {
         },
       },
       { $sort: { numTourStarts: -1 } },
+      {
+        $limit: 12,
+      },
     ]);
 
     res.status(201).json({
