@@ -8,10 +8,6 @@ exports.aliasTopTours = (req, res, next) => {
   req.query.fields ="name,price,ratingsAverage,summary,difficulty";
   next();
 }
-
-
-
-
 //GET ALL TOURS.
 exports.getAllTours = async (req, res) => {
   try {
@@ -175,6 +171,15 @@ exports.getMonthlyPlan = async (req,res) => {
           tours: { $push: "$name" },
         },
       },
+      {
+        $addFields: { month: "$_id" },
+      },
+      {
+        $project: {
+          _id: 0,
+        },
+      },
+      { $sort: { numTourStarts: -1 } },
     ]);
 
     res.status(201).json({
