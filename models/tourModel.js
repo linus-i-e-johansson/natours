@@ -10,7 +10,7 @@ const tourSchema = new mongoose.Schema(
       trim: true,
     },
 
-    slug:String,
+    slug: String,
 
     ratingsAverage: {
       type: Number,
@@ -57,6 +57,10 @@ const tourSchema = new mongoose.Schema(
       select: false,
     },
     startDates: [Date],
+    secretTour: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     toJSON: { virtuals: true },
@@ -83,6 +87,21 @@ tourSchema.post("save",function (doc, next) {
     next();
 });
 */
+//QUERY-MIDDLEWARE:
+
+tourSchema.pre(/^find/,function (next) {// run this middleware on all query's that start with "find".
+    //tourSchema.pre("find",function (next)
+    this.find({secretTour:{$ne:true}});
+    this.start = Date.now();
+    next();
+})
+
+tourSchema.post(/^find/,function (docs, next) {// runs after the query has executed.
+    console.log(`Query took: ${Date.now() - this.start} miliseconds`);
+    //console.log(docs);
+    next();
+})
+
 const Tour = mongoose.model("Tour", tourSchema);
 
 module.exports = Tour;
