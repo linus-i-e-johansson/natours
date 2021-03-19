@@ -1,36 +1,48 @@
-const mongoose = require('mongoose');
-const validator = require('validator');
-
+const mongoose = require("mongoose");
+const validator = require("validator");
+const bcrypt = require("bcryptjs");
 const userSchema = new mongoose.Schema({
-    name:{
-        type: 'String',
-        required: [true, "A user must have a name"],
+  name: {
+    type: "String",
+    required: [true, "A user must have a name"],
+  },
+  email: {
+    type: "String",
+    required: [true, "A user must have an email"],
+    unique: true,
+    lowercase: true,
+    validate: [validator.isEmail, "Please enter a valid email"],
+  },
+  photo: String,
+  password: {
+    type: "String",
+    required: [true, "please enter a password"],
+    minlength: 8,
+  },
+  passwordConfirm: {
+    type: "String",
+    required: [true, "please confirm your password"],
+    validate: {
+      // This only works on SAVE!
+      validator: function (el) {
+        return el === this.password; // pass123 === pass123
+      },
+      message: "Passwords do not match",
     },
-    email:{
-        type: 'String',
-        required: [true, "A user must have an email"],
-        unique: true,
-        lowercase:true,
-        validate:[validator.isEmail, "Please enter a valid email"]
-    },
-    photo:String,
-    password:{
-        type: 'String',
-        required: [true, "please enter a password"],
-        minlength:8,
-    },
-    passwordConfirm:{
-        type: 'String',
-        required: [true, "please confirm your password"],
-        validate:{
-            // This only works on SAVE!
-            validator:function(el){
-                return el === this.password; // pass123 === pass123
-            }
-        }
-    }
-})
+  },
+});
 
-const User = mongoose.model('User',userSchema)
+userSchema.pre("save", async function (next) {
+  // Only run this function if password was modified
+  if (!this.isModified("password")) {
+    return next();
+  }
+  // hash password with cost of 12
+  this.password = await bcrypt.hash(this.password, 12);
+  // delete passwordconfirm field
+  this.passwordConfirm = undefined;
+  next();
+});
+
+const User = mongoose.model("User", userSchema);
 module.exports = User;
-
