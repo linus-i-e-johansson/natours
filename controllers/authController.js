@@ -18,6 +18,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
     passwordChangedAt: req.body.passwordChangedAt,
+    role: req.body.role,
   });
   const token = signToken(newUser._id);
 
@@ -97,3 +98,14 @@ exports.protect = catchAsync(async (req, res, next) => {
   req.user = currentUser; // current user is assigned to req.user, so it can be used the next middleware func..
   next();
 });
+// this middleware restricts access to the delete function.
+// Only an user with an admin or lead-guide will be given permission to delete tours
+exports.restrictTo = (...roles) =>{
+  return(req,res,next)=>{
+    // roles is an array, ex: [admin, lead-guide]. role ="user"
+    if(!roles.includes(req.user.role)){
+      return next(new AppError("You do not have permission to perform this action", 403))
+    }
+    next();// if the role is within the roles array the request continues to the deletehandlerroute.
+  };
+};
