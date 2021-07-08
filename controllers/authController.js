@@ -109,3 +109,20 @@ exports.restrictTo = (...roles) =>{
     next();// if the role is within the roles array the request continues to the deletehandlerroute.
   };
 };
+
+exports.forgotPassword = catchAsync(async (req, res, next) =>{
+  // get user based on posted email.
+  const user = await User.findOne({email: req.body.email});
+  if(!user){// if email dosent exsist throw error message.
+    return next(new AppError("There is no user with that email"),404);
+  }
+  //generate random token.
+  const resetToken = user.createPasswordResetToken();
+  await user.save({validateBeforeSave: false});// this deactiviates all validators in the schema
+
+  //send it back as a email.
+});
+
+exports.resetPassword = (req, res, next) =>{
+
+}
