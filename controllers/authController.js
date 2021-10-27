@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const sendEmail = require("./../utils/email");
+const crypto = require("crypto");
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -87,7 +88,8 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
   }
   // 4: check if user changed password after token was issued
-  if (currentUser.passwordChangedAfter(decoded.iat)) {// if a change has happend..
+  if (currentUser.passwordChangedAfter(decoded.iat)) {
+    // if a change has happend..
     return next(
       new AppError(
         "The user recently changed their password! Please login again.",
@@ -101,52 +103,86 @@ exports.protect = catchAsync(async (req, res, next) => {
 });
 // this middleware restricts access to the delete function.
 // Only an user with an admin or lead-guide will be given permission to delete tours
-exports.restrictTo = (...roles) =>{
-  return(req,res,next)=>{
+exports.restrictTo = (...roles) => {
+  return (req, res, next) => {
     // roles is an array, ex: [admin, lead-guide]. role ="user"
-    if(!roles.includes(req.user.role)){
-      return next(new AppError("You do not have permission to perform this action", 403))
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError("You do not have permission to perform this action", 403)
+      );
     }
-    next();// if the role is within the roles array the request continues to the deletehandlerroute.
+    next(); // if the role is within the roles array the request continues to the deletehandlerroute.
   };
 };
 
-exports.forgotPassword = catchAsync(async (req, res, next) =>{
+exports.forgotPassword = catchAsync(async (req, res, next) => {
   // get user based on posted email.
-  const user = await User.findOne({email: req.body.email});
-  if(!user){// if email dosent exsist throw error message.
-    return next(new AppError("There is no user with that email"),404);
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    // if email dosent exsist throw error message.
+    return next(new AppError("There is no user with that email"), 404);
   }
   //generate random token.
   const resetToken = user.createPasswordResetToken();
-  await user.save({validateBeforeSave: false});// this deactiviates all validators in the schema
+  await user.save({ validateBeforeSave: false }); // this deactiviates all validators in the schema
 
   //send it back as a email.
-  const resetURL = `${req.protocol}//${req.get("host")}/api/v1/users/resetPassword/${resetToken}`
+  const resetURL = `${req.protocol}//${req.get(
+    "host"
+  )}/api/v1/users/resetPassword/${resetToken}`;
 
   const message = `Forgot your password submit a PATCH request  with your new password and password confirm
-   to ${resetURL}.\n If you didn't forget your password, Please ignore this email. `
-  
-  try{
+   to ${resetURL}.\n If you didn't forget your password, Please ignore this email. `;
+
+  try {
     await sendEmail({
-      email:user.email,
-      subject:"Your password resetToken (valid for 10 minutes)",
-      message
+      email: user.email,
+      subject: "Your password resetToken (valid for 10 minutes)",
+      message,
     });
 
     res.status(200).json({
       status: "success",
-      message: "Token sent to email!"
-    })
-  }catch (err) {
+      message: "Token sent to email!",
+    });
+  } catch (err) {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
-    await user.save({validateBeforeSave: false});
-    return next(new AppError("There was an error sending the email. Try again later "),500)
+    await user.save({ validateBeforeSave: false });
+    return next(
+      new AppError("There was an error sending the email. Try again later "),
+      500
+    );
   }
-
 });
 
-exports.resetPassword = (req, res, next) =>{
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  //1. get user based on the token.
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
 
-}
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  //2. if token has not expired, and there is a user, set the new password.
+  if (!user) {
+    return next(new AppError("token is invalid or has expired"), 400);
+  }
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+  //3. update changedPasswordAt property for the user.
+
+  //4. log the user in, send JWT
+  const token = signToken(user._id);
+  res.status(200).json({
+    status: "success",
+    token,
+  });
+});

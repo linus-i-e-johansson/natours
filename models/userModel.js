@@ -54,6 +54,11 @@ userSchema.pre("save", async function (next) {
   this.passwordConfirm = undefined;
   next();
 });
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password)") || this.isNew) return next();
+  this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
 // checks to se if the user password provided is the same as the user password stored in the DB.
 // returns true if it is and false if not.
 userSchema.methods.correctPassword = async function (
@@ -83,7 +88,7 @@ userSchema.methods.createPasswordResetToken = function () {
     .update(resetToken)
     .digest("hex");
 
-  console.log({resetToken},this.passwordResetToken);
+  console.log({ resetToken }, this.passwordResetToken);
 
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
