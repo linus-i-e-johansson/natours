@@ -41,6 +41,11 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
+  active: {
+    type: "Boolean",
+    default: true,
+    select: false,
+  },
 });
 
 userSchema.pre("save", async function (next) {
@@ -59,6 +64,13 @@ userSchema.pre("save", async function (next) {
   this.passwordChangedAt = Date.now() - 1000;
   next();
 });
+
+userSchema.pre(/^find/, function (next) {
+  // this = current query
+  this.find({ active: { $ne: false } });
+  next();
+});
+
 // checks to se if the user password provided is the same as the user password stored in the DB.
 // returns true if it is and false if not.
 userSchema.methods.correctPassword = async function (
