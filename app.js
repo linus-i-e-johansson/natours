@@ -1,9 +1,10 @@
-// request is received here, based on the route is either goes to
-// tours or user. (app) ==> (tourRouter) ==> (controller) ==> makes the call and sends back response.
-//
+/* request is received here, based on the route is either goes to
+ * tours or user. (app) ==> (tourRouter) ==> (controller) ==> makes the call and sends back response.
+ */
 const express = require("express");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
+const helmet = require("helmet");
 const tourRouter = require("./routes/tourRoutes");
 const userRouter = require("./routes/userRoutes");
 const AppError = require("./utils/appError");
@@ -11,6 +12,11 @@ const globalErrorHandler = require("./controllers/errorController");
 const app = express();
 
 //1)GLOBAL MIDDLEWARES
+
+/*Set Security HTTP headers*/
+app.use(helmet());
+
+/*Development logging */
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
@@ -21,12 +27,16 @@ const limiter = rateLimit({
   message: "To manny request from this IP, please please wait for one hour.",
 });
 app.use("/api", limiter);
-app.use(express.json()); // middleware, needed so that the data from the body is added to the request-obj
+
+/*Body parser, reading data from body into req.body */
+app.use(express.json({ limit: "10kb" })); // middleware, needed so that the data from the body is added to the request-obj
+
+/*Serving static files*/
 app.use(express.static(`${__dirname}/public`));
 
+/*Test middleware.*/
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
-  //console.log(req.headers);
   next();
 });
 
