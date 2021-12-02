@@ -1,5 +1,5 @@
 /* request is received here, based on the route is either goes to
- * tours or user (app) ==> (tourRouter) ==> (controller) ==> makes the call and sends back response
+ * tours or user(app) ==> (tourRouter) ==> (controller) ==> makes the call and sends back response
  *
  */
 const express = require("express");
