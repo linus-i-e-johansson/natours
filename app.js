@@ -4,6 +4,9 @@
 const express = require("express");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
+const mongoSanitize = require("express-mongo-sanitize");
+const xss = require("xss-clean");
+const hpp = require("hpp");
 const helmet = require("helmet");
 const tourRouter = require("./routes/tourRoutes");
 const userRouter = require("./routes/userRoutes");
@@ -28,8 +31,28 @@ const limiter = rateLimit({
 });
 app.use("/api", limiter);
 
-/*Body parser, reading data from body into req.body */
+/*BODY PARSER, reading data from body into req.body */
 app.use(express.json({ limit: "10kb" })); // middleware, needed so that the data from the body is added to the request-obj
+
+// Data sanitazation against NoSQL query injection.
+app.use(mongoSanitize());
+
+// Data sanitazation against XSS-attacks, cleans malicious html-code
+app.use(xss());
+
+/*prevents parameter pollution, but allowing parameters from the whitelist*/
+app.use(
+  hpp({
+    whitelist: [
+      "duration",
+      "ratingsQuantity",
+      "ratingsAverage",
+      "maxGroupSize",
+      "difficulty",
+      "price",
+    ],
+  })
+);
 
 /*Serving static files*/
 app.use(express.static(`${__dirname}/public`));
