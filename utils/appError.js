@@ -1,4 +1,4 @@
-//custom error handler.
+//custom error handlergit
 class AppError extends Error {
     constructor(message,statusCode){
         super(message);
