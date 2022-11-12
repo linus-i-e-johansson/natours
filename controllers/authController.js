@@ -49,7 +49,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   createAndSendToken(newUser, 201, res);
 });
 
-//login a existing user..
+//login an existing user.
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -71,7 +71,7 @@ exports.login = catchAsync(async (req, res, next) => {
 // middleware that checks if user is authenticated to access specific route.
 exports.protect = catchAsync(async (req, res, next) => {
   let token;
-  // 1: Get the token and check if its there.
+  // 1: Get the token and check if it's there.
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
@@ -90,7 +90,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   // 3: check if the user still exists. Gets current user from decoded payload.
   const currentUser = await User.findById(decoded.id);
   if (!currentUser) {
-    // if current user dosent exsists...
+    // if current user doesn´t exsists...
     return next(
       new AppError(
         "The user belonging to this token does no longer exsist.",
@@ -100,7 +100,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
   // 4: check if user changed password after token was issued
   if (currentUser.passwordChangedAfter(decoded.iat)) {
-    // if a change has happend..
+    // if a change has happend.
     return next(
       new AppError(
         "The user recently changed their password! Please login again.",
@@ -113,7 +113,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   next();
 });
 // this middleware restricts access to the delete function.
-// Only an user with an admin or lead-guide will be given permission to delete tours
+// Only a user with an admin or lead-guide will be given permission to delete tours
 exports.restrictTo = (...roles) => {
   return (req, res, next) => {
     // roles is an array, ex: [admin, lead-guide]. role ="user"
