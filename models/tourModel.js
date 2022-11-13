@@ -57,7 +57,7 @@ const tourSchema = new mongoose.Schema(
       type: String,
       required: [true, "A Tour must have a difficulty"],
       enum: {
-        values: ["easy", "medium", "difficulty"],
+        values: ["easy", "medium", "difficult"],
         message: "Difficulty is either easy medium or difficult",
       },
     },
@@ -82,7 +82,7 @@ const tourSchema = new mongoose.Schema(
     },
     startLocation:{
       //Geo JSON
-      type:{type:String,default:"point",enum:["point"]},
+      type:{type:String,default:"Point",enum:["Point"]},
       coordinates:[Number],
       address:String,
       description:String,
@@ -91,12 +91,12 @@ const tourSchema = new mongoose.Schema(
       {
         type:{
           type:String,
-          default:"point",
+          default:"Point",
           enum:["Point"]
         },
         coordinates:[Number],
         address:String,
-        describtion:String,
+        description:String,
         day:Number
       }
     ]
